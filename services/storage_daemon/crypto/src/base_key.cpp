@@ -1008,7 +1008,7 @@ bool BaseKey::ClearKey(const std::string &mnt)
         bool removeRet = OHOS::ForceRemoveDirectory(dir_);
         if (!removeRet) {
             LOGE("[L4:BaseKey] ClearKey: ForceRemoveDirectory failed");
-            StorageService::StorageRadar::ReportUserKeyResult("ClearKey", 0, E_RENAME_FILE_ERROR, "",
+            StorageService::StorageRadar::ReportUserKeyResult("ClearKey", 0, removeRet, "",
                 "ForceRemoveDirectory failed, dir_=" + dir_);
             return removeRet;
         }
@@ -1163,7 +1163,6 @@ void BaseKey::SetOriginKey(KeyBlob &originKey)
 {
     LOGI("[L4:BaseKey] SetOriginKey: >>> ENTER <<<");
     keyInfo_.key = std::move(originKey);
-    LOGI("[L4:BaseKey] SetOriginKey: <<< EXIT SUCCESS <<<");
     return;
 }
 
@@ -1191,7 +1190,7 @@ bool BaseKey::GenerateHashKey()
         LOGE("[L4:BaseKey] GenerateHashKey: <<< EXIT FAILED <<< origin key is empty, Generate error");
         return false;
     }
-    
+
     if (!keyInfo_.keyHash.IsEmpty()) {
         LOGW("[L4:BaseKey] GenerateHashKey: clear hash key when is not empty");
         keyInfo_.keyHash.Clear();

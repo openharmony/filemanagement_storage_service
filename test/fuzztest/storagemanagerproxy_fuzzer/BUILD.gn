@@ -35,6 +35,7 @@ ohos_fuzztest("StorageManagerProxyFuzzTest") {
 
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
   deps = [
+    "${storage_daemon_path}:storage_daemon_header",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
     "${storage_service_path}/services/storage_manager:storage_manager",
   ]

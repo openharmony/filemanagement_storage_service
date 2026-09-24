@@ -18,7 +18,6 @@
 
 #include <nocopyable.h>
 
-#include "ext_bundle_stats.h"
 #include "istorage_manager.h"
 #include "bundle_stats.h"
 #include "storage_stats.h"

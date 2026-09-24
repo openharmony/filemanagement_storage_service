@@ -285,13 +285,13 @@ taihe::array<ohos::file::storageStatistics::ExtBundleStats> GetAllExtBundleStats
             ohos::file::storageStatistics::ExtBundleStats{});
     }
     auto result = taihe::array<ohos::file::storageStatistics::ExtBundleStats>::
-        make(statsVec.size(), ohos::file::storageStatistics::ExtBundleStats{});
+    make(statsVec.size(), ohos::file::storageStatistics::ExtBundleStats{});
     auto extBundleStatsTransformer = [](auto &stats) -> ohos::file::storageStatistics::ExtBundleStats {
         return { stats.businessName_, stats.businessSize_, stats.showFlag_ };
     };
     std::transform(statsVec.begin(), statsVec.end(), result.begin(), extBundleStatsTransformer);
-    return taihe::array<ohos::file::storageStatistics::ExtBundleStats>(taihe::copy_data_t{},
-        result.data(), result.size());
+    return taihe::array<ohos::file::storageStatistics::ExtBundleStats>(taihe::copy_data_t{}, result.data(),
+        result.size());
 }
 
 taihe::array<ohos::file::storageStatistics::UserdataDirInfo> ListUserdataDirInfoSync()
