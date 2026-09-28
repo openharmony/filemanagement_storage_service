@@ -131,9 +131,7 @@ void AccountSubscriber::NotifyUserChangedEvent(uint32_t userId, StorageService::
     }
 
     if ((status & USER_UNLOCK_BIT) == USER_UNLOCK_BIT) {
-        int32_t mountRet = MountCryptoPathAgain(userId);
-        auto& sdCommunication = StorageDaemonCommunication::GetInstance();
-        sdCommunication.SetControlParam4RGM(userId, std::to_string(mountRet));
+        MountCryptoPathAgain(userId);
         userRecord_.erase(userId);
     }
     lock.unlock();

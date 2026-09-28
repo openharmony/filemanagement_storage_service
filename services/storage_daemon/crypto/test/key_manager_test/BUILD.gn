@@ -165,6 +165,7 @@ ohos_unittest("KeyManagerSupTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
