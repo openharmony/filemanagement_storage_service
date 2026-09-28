@@ -46,6 +46,10 @@ constexpr int32_t MTP_OPEN_ENUM_STOP = -1;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 static std::atomic<bool> g_isEventDone;
 static std::atomic<bool> isTransferring_;
+// Timestamp of the last upload end, used to suppress echo events and avoid
+// racing with the next upload for deviceMutex_.
+static std::atomic<int64_t> lastTransferEndMs(0);
+constexpr int64_t ECHO_SUPPRESS_WINDOW_MS = 500;
 std::condition_variable MtpFsDevice::eventCon_;
 std::mutex MtpFsDevice::eventMutex_;
 std::mutex MtpFsDevice::setMutex_;
@@ -61,6 +65,12 @@ void FreeRawDevices(LIBMTP_raw_device_t *&rawDevices)
     }
     free(static_cast<void *>(rawDevices));
     rawDevices = nullptr;
+}
+
+inline int64_t NowMs()
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 }
 
@@ -1522,6 +1532,12 @@ void MtpFsDevice::HandleRemoveEvent(uint32_t handleId)
 void MtpFsDevice::HandleObjectInfoChangedEvent(uint32_t handleId)
 {
     LOGI("HandleObjectInfoChangedEvent HandleID=%{public}u", handleId);
+    // Skip echo events shortly after an upload to avoid racing with the next upload.
+    if (NowMs() - lastTransferEndMs.load() < ECHO_SUPPRESS_WINDOW_MS) {
+        LOGI("Skip ObjectInfoChanged echo, within %{public}lldms after transfer",
+             static_cast<long long>(ECHO_SUPPRESS_WINDOW_MS));
+        return;
+    }
     HandleRemoveEvent(handleId);
 }
 
@@ -1553,6 +1569,9 @@ void MtpFsDevice::SetTransferValue(bool value)
 {
     std::lock_guard<std::mutex> lock(eventMutex_);
     isTransferring_.store(value);
+    if (!value) {
+        lastTransferEndMs.store(NowMs());
+    }
     eventCon_.notify_one();
 }
 
