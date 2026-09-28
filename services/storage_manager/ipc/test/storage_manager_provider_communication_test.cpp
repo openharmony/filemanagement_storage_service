@@ -91,6 +91,7 @@ namespace StorageManager {
 using namespace testing;
 using namespace testing::ext;
 constexpr pid_t ACCOUNT_UID = 3058;
+constexpr pid_t CLOUD_DISK_UID = 6161;
 class StorageManagerProviderTest : public testing::Test {
 public:
     static void SetUpTestCase(void){};
@@ -105,6 +106,16 @@ public:
     bool GetBundleNameForUid(const int uid, std::string &bundleName) override
     {
         bundleName = "com.ohos.filemanager";
+        return true;
+    }
+    sptr<IRemoteObject> AsObject() override { return nullptr; }
+};
+
+class MockBundleMgrCloudDisk : public AppExecFwk::IBundleMgr {
+public:
+    bool GetBundleNameForUid(const int uid, std::string &bundleName) override
+    {
+        bundleName = "com.ohos.cloudfilesservice";
         return true;
     }
     sptr<IRemoteObject> AsObject() override { return nullptr; }
@@ -811,6 +822,215 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetExtBundleStat
     auto ret = storageManagerProviderTest_->SetExtBundleStats(100, stats);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetExtBundleStats_OversizeName_005 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountCloudDiskFuse_001
+ * @tc.desc: Verify MountCloudDiskFuse passes UID and permission checks with valid params.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountCloudDiskFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(CLOUD_DISK_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgrCloudDisk();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test_mount";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_NE(ret, E_PERMISSION_DENIED);
+    OHOS::ForceRemoveDirectory(path);
+    OHOS::ForceRemoveDirectory("/mnt/data/100/cloud_disk_fuse");
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountCloudDiskFuse_002
+ * @tc.desc: Verify MountCloudDiskFuse returns E_USERID_RANGE when userId is invalid.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountCloudDiskFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    EXPECT_EQ(fuseFd, -1);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountCloudDiskFuse_003
+ * @tc.desc: Verify MountCloudDiskFuse returns E_PERMISSION_DENIED when not called by cloud disk.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountCloudDiskFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = nullptr;
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(fuseFd, -1);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountCloudDiskFuse_004
+ * @tc.desc: Verify MountCloudDiskFuse returns E_PARAMS_INVALID when path is invalid.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountCloudDiskFuse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(CLOUD_DISK_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgrCloudDisk();
+    int32_t userId = 100;
+    std::string path = "../evil";
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_MountCloudDiskFuse_005
+ * @tc.desc: Verify MountCloudDiskFuse returns E_PARAMS_INVALID when path does not match cloud_disk_fuse prefix.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountCloudDiskFuse_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_005 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(CLOUD_DISK_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgrCloudDisk();
+    int32_t userId = 100;
+    std::string path = "/data/test/test_cloud_disk_prefix";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
+    int32_t fuseFd = -1;
+    auto ret = storageManagerProviderTest_->MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    EXPECT_EQ(fuseFd, -1);
+    OHOS::ForceRemoveDirectory(path);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountCloudDiskFuse_005 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountCloudDiskFuse_001
+ * @tc.desc: Verify UMountCloudDiskFuse passes UID and permission checks with valid params.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCloudDiskFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(CLOUD_DISK_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgrCloudDisk();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test_umount";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
+    auto ret = storageManagerProviderTest_->UMountCloudDiskFuse(userId, path);
+    EXPECT_NE(ret, E_PERMISSION_DENIED);
+    OHOS::ForceRemoveDirectory(path);
+    OHOS::ForceRemoveDirectory("/mnt/data/100/cloud_disk_fuse");
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountCloudDiskFuse_002
+ * @tc.desc: Verify UMountCloudDiskFuse returns E_PARAMS_INVALID when path is invalid.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCloudDiskFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_002 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(CLOUD_DISK_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgrCloudDisk();
+    int32_t userId = 100;
+    std::string path = "../evil";
+    auto ret = storageManagerProviderTest_->UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_002 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountCloudDiskFuse_003
+ * @tc.desc: Verify UMountCloudDiskFuse returns E_USERID_RANGE when userId is invalid.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCloudDiskFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_003 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    int32_t userId = -1;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    auto ret = storageManagerProviderTest_->UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_003 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountCloudDiskFuse_004
+ * @tc.desc: Verify UMountCloudDiskFuse returns E_PERMISSION_DENIED when not called by cloud disk.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCloudDiskFuse_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_004 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = nullptr;
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    auto ret = storageManagerProviderTest_->UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_004 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UMountCloudDiskFuse_005
+ * @tc.desc: Verify UMountCloudDiskFuse returns E_PARAMS_INVALID when path does not match cloud_disk_fuse prefix.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountCloudDiskFuse_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_005 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    ScopedTestUid uidGuard(CLOUD_DISK_UID);
+    auto oldBundleMgrProxy = g_testBundleMgrProxy;
+    g_testBundleMgrProxy = new MockBundleMgrCloudDisk();
+    int32_t userId = 100;
+    std::string path = "/data/test/test_cloud_disk_prefix";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
+    auto ret = storageManagerProviderTest_->UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    OHOS::ForceRemoveDirectory(path);
+    g_testBundleMgrProxy = oldBundleMgrProxy;
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountCloudDiskFuse_005 end";
 }
 }
 }

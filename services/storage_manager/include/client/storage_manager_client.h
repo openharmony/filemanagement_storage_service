@@ -56,6 +56,8 @@ public:
     static int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
     static int32_t RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback);
     static int32_t UnregisterUeceActivationCallback();
+    static int32_t MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd);
+    static int32_t UMountCloudDiskFuse(int32_t userId, const std::string &path);
 private:
     static sptr<IStorageManager> GetStorageManagerProxy(void);
 };

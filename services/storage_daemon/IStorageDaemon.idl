@@ -168,4 +168,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 264] void CreateDmLinear([in] String sourceDevPath,
                                        [in] unsigned long startSector, [in] unsigned long sectorCount,
                                        [out] unsigned long dmDev);
+     [ipccode 265] void MountCloudDiskFuse([in] int userId, [in] String path, [out] FileDescriptor fuseFd);
+     [ipccode 266] void UMountCloudDiskFuse([in] int userId, [in] String path);
 }

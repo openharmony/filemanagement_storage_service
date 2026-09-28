@@ -105,6 +105,9 @@ public:
     // dlp fuse
     virtual int32_t MountDlpFuse(const std::string &dstPath, int32_t &fuseFd) override;
     virtual int32_t UMountDlpFuse(const std::string &dstPath) override;
+    // clouddisk fuse
+    virtual int32_t MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
+    virtual int32_t UMountCloudDiskFuse(int32_t userId, const std::string &path) override;
     virtual int32_t IsFileOccupied(const std::string &path,
                                    const std::vector<std::string> &inputList,
                                    std::vector<std::string> &outputList,
@@ -221,6 +224,7 @@ public:
 private:
     std::mutex mutex_;
     std::mutex mutexStats_;
+    std::mutex cloudDiskFuseMutex_;
 
     std::atomic<bool> stopRadarReport_{false};
     std::condition_variable execRadarReportCon_;

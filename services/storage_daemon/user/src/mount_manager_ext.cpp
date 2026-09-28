@@ -31,6 +31,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_utils.h"
+#include "utils/disk_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -373,5 +374,64 @@ int32_t MountManager::UMountDlpFuse(const std::string &dstPath)
     LOGI("[L2:MountManager] UMountDlpFuse: <<< EXIT SUCCESS <<<");
     return E_OK;
 }
+
+int32_t MountManager::MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    LOGI("[L2:MountManager] MountCloudDiskFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s",
+        userId, path.c_str());
+    UMountCloudDiskFuse(userId, path);
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    fuseFd = open("/dev/fuse", O_RDWR);
+    if (fuseFd < 0) {
+        LOGE("[L2:MountManager] MountCloudDiskFuse: <<< EXIT FAILED <<< open /dev/fuse fail, errno=%{public}d",
+            errno);
+        return E_OPEN_FUSE;
+    }
+    auto delay = StorageService::StorageRadar::ReportDuration("OPEN: CLOUDDISK FUSE", startTime,
+        StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("[L2:MountManager] MountCloudDiskFuse: open fuse end.");
+    string opt = StringPrintf("fd=%i,"
+        "rootmode=40000,"
+        "default_permissions,"
+        "allow_other,"
+        "user_id=0,group_id=0,"
+        "context=\"u:object_r:hmdfs:s0\","
+        "fscontext=u:object_r:hmdfs:s0",
+        fuseFd);
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
+    int ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV, opt.c_str());
+    if (ret) {
+        LOGE("[L2:MountManager] MountCloudDiskFuse: <<< EXIT FAILED <<< mount fuse failed, ret=%{public}d,"
+            "errno=%{public}d, path=%{public}s", ret, errno, path.c_str());
+        close(fuseFd);
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("MountCloudDiskFuse", userId, E_MOUNT_CLOUDDISK_FUSE, extraData);
+        return E_MOUNT_CLOUDDISK_FUSE;
+    }
+    delay = StorageService::StorageRadar::ReportDuration("MOUNT: CLOUDDISK FUSE", startTime,
+        StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("[L2:MountManager] MountCloudDiskFuse: <<< EXIT SUCCESS <<< fuseFd=%{public}d", fuseFd);
+    return E_OK;
+}
+
+int32_t MountManager::UMountCloudDiskFuse(int32_t userId, const std::string &path)
+{
+    LOGI("[L2:MountManager] UMountCloudDiskFuse: >>> ENTER <<< userId=%{public}d, path=%{public}s",
+        userId, path.c_str());
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    int32_t ret = UMount2(path, MNT_DETACH);
+    if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
+        LOGE("[L2:MountManager] UMountCloudDiskFuse: <<< EXIT FAILED <<< umount failed, ret=%{public}d,"
+            "errno=%{public}d, %{public}s", ret, errno, path.c_str());
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("UMountCloudDiskFuse", userId, E_UMOUNT_CLOUDDISK_FUSE, extraData);
+        return E_UMOUNT_CLOUDDISK_FUSE;
+    }
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT CLOUDDISK FUSE",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("[L2:MountManager] UMountCloudDiskFuse: <<< EXIT SUCCESS <<<");
+    return E_OK;
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

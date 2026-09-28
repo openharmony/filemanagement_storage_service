@@ -241,6 +241,17 @@ int32_t StorageDaemonProxy::UMountDlpFuse(const std::string &dstPath)
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    fuseFd = 5;
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::UMountCloudDiskFuse(int32_t userId, const std::string &path)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {

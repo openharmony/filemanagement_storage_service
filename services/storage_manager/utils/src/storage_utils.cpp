@@ -128,6 +128,17 @@ bool IsPathStartWithDlp(const std::string &dstPath)
     return true;
 }
 
+bool IsPathStartWithCloudDisk(int32_t userId, const std::string &dstPath)
+{
+    const std::string dir = "/mnt/data/" + std::to_string(userId) + "/cloud_disk_fuse";
+    if (dstPath.compare(0, dir.size(), dir) == 0) {
+        return true;
+    }
+    LOGE("path is not start with %{public}s, path: %{public}s", dir.c_str(),
+         GetAnonyString(dstPath).c_str());
+    return false;
+}
+
 bool CheckPkgNameRange(const std::string &pkgName)
 {
     if (pkgName.empty()) {

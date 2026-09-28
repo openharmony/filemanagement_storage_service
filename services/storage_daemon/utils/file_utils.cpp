@@ -1683,5 +1683,16 @@ bool IsPathStartWithFileMgr(int32_t userId, const std::string &path)
     }
     return true;
 }
+
+bool IsPathStartWithCloudDisk(int32_t userId, const std::string &path)
+{
+    const std::string dir = "/mnt/data/" + std::to_string(userId) + "/cloud_disk_fuse";
+    if (path.compare(0, dir.size(), dir) == 0) {
+        return true;
+    }
+    LOGE("path is not start with %{public}s, path: %{public}s", dir.c_str(),
+        GetAnonyString(path).c_str());
+    return false;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -1314,5 +1314,84 @@ HWTEST_F(MountManagerTest, MountManagerTest_ClearSecondMountMap_001, TestSize.Le
 
     GTEST_LOG_(INFO) << "MountManagerTest_ClearSecondMountMap_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountCloudDiskFuse_001
+ * @tc.desc: Verify the MountCloudDiskFuse function when mount succeeds.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountCloudDiskFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountCloudDiskFuse_001 start";
+
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test_mount";
+    ForceCreateDirectory(path);
+    int32_t fuseFd = -1;
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    int32_t ret = MountManager::GetInstance().MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_GE(fuseFd, 0);
+    if (fuseFd >= 0) {
+        close(fuseFd);
+    }
+    ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountCloudDiskFuse_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountCloudDiskFuse_002
+ * @tc.desc: Verify the MountCloudDiskFuse function when mount fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountCloudDiskFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountCloudDiskFuse_002 start";
+
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test_mount_fail";
+    ForceCreateDirectory(path);
+    int32_t fuseFd = -1;
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    int32_t ret = MountManager::GetInstance().MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_MOUNT_CLOUDDISK_FUSE);
+    ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountCloudDiskFuse_002 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_UMountCloudDiskFuse_001
+ * @tc.desc: Verify the UMountCloudDiskFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountCloudDiskFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountCloudDiskFuse_001 start";
+
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test_umount";
+    ForceCreateDirectory(path);
+    errno = ENOENT;
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    int32_t ret = MountManager::GetInstance().UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_OK);
+
+    errno = EINVAL;
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    ret = MountManager::GetInstance().UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_OK);
+
+    errno = EBUSY;
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    ret = MountManager::GetInstance().UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_UMOUNT_CLOUDDISK_FUSE);
+
+    errno = 0;
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
+    ret = MountManager::GetInstance().UMountCloudDiskFuse(userId, path);
+    EXPECT_EQ(ret, E_OK);
+    ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountCloudDiskFuse_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

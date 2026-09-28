@@ -310,5 +310,84 @@ HWTEST_F(StorageUtilsTest, Storage_Utils_GetRoundSize_test_0006, TestSize.Level2
     EXPECT_LE(GetRoundSize(1024LL * gb), GetRoundSize(1025LL * gb));
     GTEST_LOG_(INFO) << "Storage_Utils_GetRoundSize_test_0006 end";
 }
+/**
+ * @tc.number: SUB_STORAGE_IsPathStartWithCloudDisk_ValidPrefix
+ * @tc.name: IsPathStartWithCloudDisk_ValidPrefix
+ * @tc.desc: Test path with valid cloud disk prefix returns true.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(StorageUtilsTest, IsPathStartWithCloudDisk_ValidPrefix, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_ValidPrefix start";
+
+    EXPECT_TRUE(IsPathStartWithCloudDisk(100, "/mnt/data/100/cloud_disk_fuse/sub"));
+
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_ValidPrefix end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_IsPathStartWithCloudDisk_EqualPrefixLen
+ * @tc.name: IsPathStartWithCloudDisk_EqualPrefixLen
+ * @tc.desc: Test exact cloud_disk_fuse directory path returns true.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(StorageUtilsTest, IsPathStartWithCloudDisk_EqualPrefixLen, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_EqualPrefixLen start";
+
+    EXPECT_TRUE(IsPathStartWithCloudDisk(100, "/mnt/data/100/cloud_disk_fuse"));
+
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_EqualPrefixLen end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_IsPathStartWithCloudDisk_Mismatch
+ * @tc.name: IsPathStartWithCloudDisk_Mismatch
+ * @tc.desc: Test path with mismatched prefix returns false.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(StorageUtilsTest, IsPathStartWithCloudDisk_Mismatch, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_Mismatch start";
+
+    EXPECT_FALSE(IsPathStartWithCloudDisk(100, "/mnt/data/100/other/sub"));
+
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_Mismatch end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_IsPathStartWithCloudDisk_Empty
+ * @tc.name: IsPathStartWithCloudDisk_Empty
+ * @tc.desc: Test empty path returns false.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(StorageUtilsTest, IsPathStartWithCloudDisk_Empty, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_Empty start";
+
+    EXPECT_FALSE(IsPathStartWithCloudDisk(100, ""));
+
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_Empty end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_IsPathStartWithCloudDisk_UserIdMismatch
+ * @tc.name: IsPathStartWithCloudDisk_UserIdMismatch
+ * @tc.desc: Test path with different userId in prefix returns false.
+ * @tc.type: FUNC
+ * @tc.require: RR-30093650
+ */
+HWTEST_F(StorageUtilsTest, IsPathStartWithCloudDisk_UserIdMismatch, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_UserIdMismatch start";
+
+    EXPECT_FALSE(IsPathStartWithCloudDisk(100, "/mnt/data/101/cloud_disk_fuse/sub"));
+
+    GTEST_LOG_(INFO) << "IsPathStartWithCloudDisk_UserIdMismatch end";
+}
 } // namespace StorageManager
 } // namespace OHOS

@@ -845,6 +845,12 @@
             "mode": "0711",
             "uid": 1008,
             "gid": 1008
+        },
+        {
+            "path": "/mnt/data/<userId>/cloud_disk_fuse",
+            "mode": "0771",
+            "uid": 6161,
+            "gid": 6161
         }
     ],
     "virtual": [

@@ -900,6 +900,10 @@ bool MountManager::CloudAndFuseDirFlag(const std::string &path)
     if (std::regex_match(path.c_str(), cloudFusePattern)) {
         return true;
     }
+    std::regex cloudDiskFusePattern("\\/mnt\\/data.*cloud_disk_fuse");
+    if (std::regex_match(path.c_str(), cloudDiskFusePattern)) {
+        return true;
+    }
     return false;
 }
 

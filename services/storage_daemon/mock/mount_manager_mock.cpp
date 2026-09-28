@@ -133,6 +133,22 @@ int32_t MountManager::UMountDlpFuse(const std::string &dstPath)
     return IMountManagerMoc::mountManagerMoc->UMountDlpFuse(dstPath);
 }
 
+int32_t MountManager::MountCloudDiskFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->MountCloudDiskFuse(userId, path, fuseFd);
+}
+
+int32_t MountManager::UMountCloudDiskFuse(int32_t userId, const std::string &path)
+{
+    if (IMountManagerMoc::mountManagerMoc == nullptr) {
+        return -1;
+    }
+    return IMountManagerMoc::mountManagerMoc->UMountCloudDiskFuse(userId, path);
+}
+
 int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {

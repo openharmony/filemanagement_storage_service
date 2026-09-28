@@ -1340,4 +1340,47 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetSystemDataSize_
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetSystemDataSize_001 SUCCESS";
 }
 
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_MountCloudDiskFuse_001
+ * @tc.name: Daemon_communication_MountCloudDiskFuse_001
+ * @tc.desc: Test function of MountCloudDiskFuse interface when Daemon SA is not running.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountCloudDiskFuse_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountCloudDiskFuse_001";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    int32_t fuseFd = -1;
+    int32_t ret = sdCommunication.MountCloudDiskFuse(userId, path, fuseFd);
+    EXPECT_TRUE(ret == E_OK || ret == E_MOUNT_CLOUDDISK_FUSE || ret == E_SA_IS_NULLPTR ||
+                ret == E_SERVICE_IS_NULLPTR || ret == E_REMOTE_IS_NULLPTR);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountCloudDiskFuse_001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountCloudDiskFuse_001
+ * @tc.name: Daemon_communication_UMountCloudDiskFuse_001
+ * @tc.desc: Test function of UMountCloudDiskFuse interface when Daemon SA is not running.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountCloudDiskFuse_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountCloudDiskFuse_001";
+    auto& sdCommunication = StorageDaemonCommunication::GetInstance();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/cloud_disk_fuse/test";
+    int32_t ret = sdCommunication.UMountCloudDiskFuse(userId, path);
+    EXPECT_TRUE(ret == E_OK || ret == E_SA_IS_NULLPTR ||
+                ret == E_SERVICE_IS_NULLPTR || ret == E_REMOTE_IS_NULLPTR);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountCloudDiskFuse_001";
+}
+
 } // namespace
