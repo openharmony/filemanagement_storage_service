@@ -108,6 +108,7 @@ ohos_unittest("storage_utils_test") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
+    "os_account:os_account_innerkits",
   ]
 }
 
