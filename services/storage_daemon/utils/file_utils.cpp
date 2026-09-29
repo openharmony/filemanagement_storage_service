@@ -769,8 +769,12 @@ static void ReportForkExecDiagIfNeeded(const std::vector<std::string> &cmd, int3
     VolumeOpDiagReportToolFailure(cmd, ret, exitCode, output);
 }
 
-static void RedirectChildStd(int pipeFd[PIPE_FD_LEN], bool captureAll)
+static void RedirectChildStd(int pipeFd[PIPE_FD_LEN], size_t len, bool captureAll)
 {
+    if (pipeFd == nullptr || len < PIPE_FD_LEN) {
+        LOGE("[L8:FileUtils] RedirectChildStd: pipe param is invalid.");
+        _exit(1);
+    }
     if (captureAll) {
         if (RedirectStdToPipe(pipeFd, PIPE_FD_LEN) != E_OK) {
             _exit(1);
@@ -978,7 +982,7 @@ int ForkExecWithExit(std::vector<std::string> &cmd, int *exitStatus, std::vector
         ReportForkExecDiagIfNeeded(cmd, E_FORK, errno, output);
         return E_FORK;
     } else if (pid == 0) {
-        RedirectChildStd(pipe_fd, output != nullptr);
+        RedirectChildStd(pipe_fd, PIPE_FD_LEN, output != nullptr);
         execvp(args[0], const_cast<char **>(args.data()));
         LOGE("[L8:FileUtils] ForkExecWithExit: <<< EXIT FAILED <<< execvp failed, errno=%{public}d", errno);
         _exit(1);
