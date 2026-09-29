@@ -89,17 +89,18 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
     std::map<std::string, std::string> notMountPaths = shareFiles;
     int32_t ret = FilterNotMountedPath(notMountPaths);
     if (ret != E_OK) {
+        StorageRadar::ReportUserManager("MountDisShareFile", userId, ret, "FilterNotMountedPath failed");
         LOGE("[L2:MountManager] MountDisShareFile: <<< EXIT FAILED <<< FilterNotMountedPath failed, ret=%{public}d",
             ret);
-        StorageRadar::ReportUserManager("MountDisShareFile", userId, ret, "FilterNotMountedPath failed");
         return ret;
     }
     for (const auto &item: notMountPaths) {
         std::string dstPath = item.first;
         std::string srcPath = item.second;
         if (!IsDir(srcPath)) {
+            StorageRadar::ReportUserManager("MountDisShareFile", userId, E_NON_EXIST,
+                "IsDir failed, srcPath=" + srcPath + "errno=" + to_string(errno));
             LOGE("[L2:MountManager] MountDisShareFile: <<< EXIT FAILED <<< src path invalid, errno=%{public}d", errno);
-            StorageRadar::ReportUserManager("MountDisShareFile", userId, E_NON_EXIST, "errno=" + to_string(errno));
             return E_NON_EXIST;
         }
         if (!MatchesDisSharePath(dstPath)) {
@@ -108,7 +109,8 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
             return E_NON_EXIST;
         }
         if (!IsDir(dstPath) && !MkDirRecurse(dstPath, SHARE_FILE_0771)) {
-            StorageRadar::ReportUserManager("MountDisShareFile", userId, E_NON_EXIST, "errno=" + to_string(errno));
+            StorageRadar::ReportUserManager("MountDisShareFile", userId, E_NON_EXIST,
+                "IsDir failed and MkDirRecurse failed, dstPath=" + dstPath + "errno=" + to_string(errno));
             LOGE("[L2:MountManager] MountDisShareFile: mount share file, dst path mkdir failed,"
                 "errno is %{public}d", errno);
             return E_NON_EXIST;
@@ -262,7 +264,7 @@ bool MountManager::MatchesDisSharePath(const std::string &dstPath)
         return false;
     }
     std::string userIdPattern = R"((0|[1-9][0-9]{0,4}))";
-    std::string bundlePattern = R"(.{1,100})";
+    std::string bundlePattern = R"(.{7,128})";
     std::string networkIdPattern = R"([0-9a-zA-Z]{1,65})";
     std::string levelPattern = R"([0-9a-zA-Z]{1,3})";
     std::string mediaPattern = R"(^/data/service/el2/)" + userIdPattern + R"(/hmdfs/account/data/)" + bundlePattern +

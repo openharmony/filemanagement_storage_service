@@ -32,6 +32,7 @@ public:
     virtual int32_t UMountDisShareFile(const std::vector<std::string> &distributeDirs) = 0;
     virtual int32_t MountDisShareFile(int32_t userId,
         const std::map<std::string, std::string> &shareFiles) = 0;
+    virtual int32_t SetControlParam4RGM(uint32_t userId) = 0;
     virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) = 0;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
@@ -57,6 +58,7 @@ public:
     MOCK_METHOD(int32_t, UMountDisShareFile, (int32_t, const std::string &));
     MOCK_METHOD(int32_t, UMountDisShareFile, ((const std::vector<std::string>&)));
     MOCK_METHOD(int32_t, MountDisShareFile, (int32_t, (const std::map<std::string, std::string>&)));
+    MOCK_METHOD(int32_t, SetControlParam4RGM, (uint32_t));
     MOCK_METHOD(int32_t, MountDfsDocs, (int32_t, const std::string &, const std::string &, const std::string &));
     MOCK_METHOD(int32_t, UMountDfsDocs, (int32_t, const std::string &, const std::string &, const std::string &));
     MOCK_METHOD(int32_t, MountMediaFuse, (int32_t, int32_t &));

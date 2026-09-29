@@ -152,6 +152,7 @@ public:
         const std::string &extraData);
     static void ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
         const std::string &extraData);
+    static void ReportAncoResult(const std::string &funcName, uint32_t userId, int ret, const std::string &extraData);
     static void ReportStatistics(uint32_t userId, StorageDaemon::RadarStatisticInfo radarInfo);
     static std::string ReportDuration(const std::string &funcName, int64_t startTime,
         int64_t delay_threshold = DEFAULT_DELAY_TIME_THRESH, uint32_t userId = DEFAULT_USERID);

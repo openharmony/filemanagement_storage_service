@@ -139,6 +139,7 @@ ohos_shared_library("storage_manager_sa_proxy") {
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",
+    "os_account:os_account_innerkits",
   ]
 
   deps = [

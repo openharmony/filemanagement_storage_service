@@ -26,7 +26,6 @@
 #include "mock/mount_manager_mock.h"
 #include "mock/key_manager_ext_mock.h"
 #include "userdata_dir_info.h"
-#include <climits>
 #include <cstdlib>
 #include <cstring>
 #include <gtest/gtest.h>
@@ -38,7 +37,7 @@
 
 namespace {
 pid_t g_testCallingUid = 999;
-} //namespace
+} // namespace
 
 void SetCallingUid(int32_t uid)
 {
@@ -54,7 +53,7 @@ pid_t OHOS::IPCSkeleton::GetCallingUid()
 {
     return g_testCallingUid;
 }
-} //namespace OHOS
+} // namespace OHOS
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -77,15 +76,6 @@ public:
 };
 
 std::vector<uint8_t> GenerateTestVector(uint8_t startValue, size_t length)
-{
-    std::vector<uint8_t> result(length);
-    for (size_t i = 0; i < length; ++i) {
-        result[i] = startValue + static_cast<uint8_t>(i);
-    }
-    return result;
-}
-
-std::vector<uint8_t> GenerateTestData(uint8_t startValue, size_t length)
 {
     std::vector<uint8_t> result(length);
     for (size_t i = 0; i < length; ++i) {
@@ -144,6 +134,247 @@ void StorageDaemonProviderTest::TearDown(void)
     keyManagerExtMock_ = nullptr;
     MountManagerMoc::mountManagerMoc = nullptr;
     mountManagerMoc_ = nullptr;
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_PermissionInvalid_001
+ * @tc.desc: Verify the PermissionInvalid function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_PermissionInvalid_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_PermissionInvalid_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    bool flag = true;
+    int32_t result = storageDaemonProviderTest_->QueryUsbIsInUse("path", flag);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->StartUser(100);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->StopUser(100);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->PrepareUserDirs(100, 1);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->DestroyUserDirs(100, 1);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->SetDirEncryptionPolicy(100, "path", 1);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->CompleteAddUser(100);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->EraseAllUserEncryptedKeys({100});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UpdateUserAuth(100, 1, {100}, {100}, {100});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UpdateUseAuthWithRecoveryKey({100}, {100}, 1, 100, {{100}});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->ActiveUserKey(100, {100}, {100});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->InactiveUserKey(100);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UpdateKeyContext(100, true);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->LockUserScreen(100);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UnlockUserScreen(100, {100}, {100});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->GetLockScreenStatus(100, flag);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::string keyId;
+    result = storageDaemonProviderTest_->GenerateAppkey(100, 1, keyId, true);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->DeleteAppkey(100, keyId);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->CreateRecoverKey(100, 1, {100}, {100});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->SetRecoverKey({100});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::vector<uint8_t> binaryData = {3, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0};
+    StorageFileRawData fileRawData {
+        .size = 7,
+        .data = binaryData.data(),
+    };
+    std::vector<int32_t> funcResult;
+    result = storageDaemonProviderTest_->CreateShareFile(fileRawData, 1, 1, funcResult);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->DeleteShareFile(1, fileRawData);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->SetBundleQuota(1, "path", 100);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::vector<UserdataDirInfo> scanDirs;
+    result = storageDaemonProviderTest_->ListUserdataDirInfo(scanDirs);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    int64_t size = 100;
+    result = storageDaemonProviderTest_->GetOccupiedSpace(1, 1, size);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->MountDfsDocs(100, "path", "abc123", "abc123");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UMountDfsDocs(100, "path", "abc123", "abc123");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->GetFileEncryptStatus(100, flag, true);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->GetUserNeedActiveStatus(100, flag);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    int32_t fuseFd = 1;
+    result = storageDaemonProviderTest_->MountMediaFuse(100, fuseFd);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UMountMediaFuse(100);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->MountFileMgrFuse(100, "path", fuseFd);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UMountFileMgrFuse(100, "path");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->MountDlpFuse("path", fuseFd);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UMountDlpFuse("path");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::vector<std::string> outputList;
+    result = storageDaemonProviderTest_->IsFileOccupied("path", {"singleItem"}, outputList, flag);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->ResetSecretWithRecoveryKey(100, 1, {100});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->MountDisShareFile(100, {{{"file", "path"}}});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UMountDisShareFile(100, "abc123");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UMountDisShareFile({"path"});
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->InactiveUserPublicDirKey(100);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UpdateUserPublicDirPolicy(100);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::vector<UidSaInfo> vec;
+    result = storageDaemonProviderTest_->QueryOccupiedSpaceForSa(vec, size, {{{1, "path"}}}, 1);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    sptr<StorageManager::IUeceActivationCallback> callback = nullptr;
+    result = storageDaemonProviderTest_->RegisterUeceActivationCallback(callback);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->UnregisterUeceActivationCallback();
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    mode_t mode = S_IRWXU | S_IRWXG | S_IXOTH;
+    result = storageDaemonProviderTest_->CreateUserDir("path", mode, 0, 0);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::vector<NextDqBlk> dqBlks;
+    result = storageDaemonProviderTest_->GetDqBlkSpacesByUids({100}, dqBlks);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::vector<DirSpaceInfo> inDirs;
+    std::vector<DirSpaceInfo> outDirs;
+    result = storageDaemonProviderTest_->GetDirListSpace(inDirs, outDirs);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::vector<DirSpaceInfo> resultDirs;
+    std::vector<LargeFileInfo> largeFiles;
+    std::vector<LargeDirInfo> largeDirs;
+    result = storageDaemonProviderTest_->GetDirListSpaceByPaths({"path"}, {100}, resultDirs, largeFiles, largeDirs);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->SetStopScanFlag(true);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::string dir = "path";
+    result = storageDaemonProviderTest_->GetAncoSizeData(dir);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->GetDataSizeByPath("path", size);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->GetSystemDataSize(size);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    uint64_t totalSize = 100;
+    result = storageDaemonProviderTest_->GetRmgResourceSize("name", totalSize);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_PermissionInvalid_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_PermissionInvalid_002
+ * @tc.desc: Verify the PermissionInvalid function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_PermissionInvalid_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_PermissionInvalid_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string output;
+    int32_t maxVolume = 1;
+    std::string uuid, type, label;
+    int fuseFd = 0;
+    std::string blockInfos;
+    int64_t totalSize = 100;
+#ifdef EXTERNAL_STORAGE_MANAGER
+    int32_t result = storageDaemonProviderTest_->CreateBlockDeviceNode("path", 1, 1, 1);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->DestroyBlockDeviceNode("path");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->ReadPartitionTable("path", output, maxVolume);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->Mount("path", "path", "type", 0, "data");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->Unmount("path", "type", true);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->QueryCDStatus("path", maxVolume);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->EjectCD("path");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->FormatVolume("path", "type", "/dev/disk", "get", 1);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->Check("path", "type", true);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->Repair("path", "type");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->SetLabel("path", "type", "label");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->ReadMetadata("path", uuid, type, label);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->MountFuseDevice("path", fuseFd);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->Partition("path", "type");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->GetBlockInfoByType("path", "id", blockInfos);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->GetPartitionTableInfo("path", blockInfos);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->CreatePartition("path", 1, 1, 1, "code");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    std::vector<std::string> cmd{};
+    result = storageDaemonProviderTest_->FormatPartition("path", "type", "name", cmd, true);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->Erase("path");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->Eject("name");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->CreateIsoImage("path", "path", "type", "path");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->Burn("path", "options", "type");
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->GetVolumeOpProcess("id", maxVolume);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->VerifyBurnData("path", 1);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+    result = storageDaemonProviderTest_->GetCapacity("path", totalSize, totalSize);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
+#else
+    EXPECT_EQ(storageDaemonProviderTest_->CreateBlockDeviceNode("path", 1, 1, 1), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->DestroyBlockDeviceNode("path"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->ReadPartitionTable("path", output, maxVolume), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->Mount("path", "path", "type", 0, "data"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->Unmount("path", "type", true), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->QueryCDStatus("path", maxVolume), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->EjectCD("path"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->FormatVolume("path", "type", "/dev/disk", "gpt", 1), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->Check("path", "type", true), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->Repair("path", "type"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->SetLabel("path", "type", "label"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->ReadMetadata("path", uuid, type, label), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->MountFuseDevice("path", fuseFd), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->Partition("path", "type"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->GetBlockInfoByType("type", "id", blockInfos), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->GetPartitionTableInfo("path", blockInfos), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->CreatePartition("path", 1, 1, 1, "code"), E_NOT_SUPPORT);
+    std::vector<std::string> cmd{};
+    EXPECT_EQ(storageDaemonProviderTest_->FormatPartition("path", "type", "name", cmd, true), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->Erase("path"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->Eject("name"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->CreateIsoImage("path", "path", "type", "path"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->Burn("path", "options", "type"), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->GetVolumeOpProcess("id", maxVolume), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->VerifyBurnData("path", 1), E_NOT_SUPPORT);
+    EXPECT_EQ(storageDaemonProviderTest_->GetCapacity("path", totalSize, totalSize), E_NOT_SUPPORT);
+#endif
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_PermissionInvalid_002 end";
 }
 
 /**
@@ -207,7 +438,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryUsbIsInUse_00
 HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryUsbIsInUse_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryUsbIsInUse_003 start";
-    SetCallingUid(STORAGE_MANAGER_UID);
+    SetCallingUid(DISK_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string diskPath = "";
     bool isInUse = false;
@@ -309,7 +540,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_PrepareUserDirs_00
     SetCallingUid(STORAGE_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     const uint32_t testFlags = 0;
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     auto ret = storageDaemonProviderTest_->PrepareUserDirs(StorageTest::USER_ID1, testFlags);
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_PrepareUserDirs_001 end";
@@ -344,7 +574,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DestroyUserDirs_00
     SetCallingUid(STORAGE_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     const uint32_t testFlags = 0x02;
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     auto ret = storageDaemonProviderTest_->DestroyUserDirs(StorageTest::USER_ID1, testFlags);
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DestroyUserDirs_001 end";
@@ -362,7 +591,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DestroyUserDirs_00
     SetCallingUid(STORAGE_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     const uint32_t testFlags = -1;
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     auto ret = storageDaemonProviderTest_->DestroyUserDirs(StorageService::START_USER_ID - 1, testFlags);
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DestroyUserDirs_002 end";
@@ -483,7 +711,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateUseAuthWithR
     auto newSecret = GenerateTestVector(0x02, 32);
     uint64_t secureUid = 12345678901234;
     std::vector<std::vector<uint8_t>> plainText = {GenerateTestVector(0x03, 64), GenerateTestVector(0x04, 64)};
-
     uint32_t invalidUserId = -1;
     int32_t ret = storageDaemonProviderTest_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
                                                                            invalidUserId, plainText);
@@ -512,8 +739,8 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ActiveUserKey_001,
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ActiveUserKey_001 start";
     SetCallingUid(STORAGE_MANAGER_UID);
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    auto token = GenerateTestData(0x01, 32);
-    auto secret = GenerateTestData(0x02, 32);
+    auto token = GenerateTestVector(0x01, 32);
+    auto secret = GenerateTestVector(0x02, 32);
     int32_t ret = storageDaemonProviderTest_->ActiveUserKey(StorageTest::USER_ID1, token, secret);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ActiveUserKey_001 end";
@@ -741,7 +968,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GenerateAppkey_001
     std::string keyId;
     uint32_t hashId = 1234;
     bool needreset = false;
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     int32_t result = storageDaemonProviderTest_->GenerateAppkey(StorageTest::USER_ID1, hashId, keyId, needreset);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GenerateAppkey_001 end";
@@ -884,7 +1110,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 start";
     SetCallingUid(STORAGE_MANAGER_UID);
-    int32_t shareFileCreateFailed = 12100001;
+    int32_t CreateShareFileFailed = 12100001;
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::string uriStr = "file1";
     std::vector<std::string> uriStrVec = {uriStr};
@@ -897,7 +1123,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
     uint32_t flag = 0;
     std::vector<int32_t> funcResult;
     int32_t ret = storageDaemonProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
-    ASSERT_EQ(ret, shareFileCreateFailed);
+    ASSERT_EQ(ret, CreateShareFileFailed);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 end";
 }
 
@@ -911,7 +1137,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_002 start";
     SetCallingUid(STORAGE_MANAGER_UID);
-    int32_t shareFileCreateFailed = 12100001;
+    int32_t CreateShareFileFailed = 12100001;
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     std::vector<std::string> uriStrVec;
     for (int i = 0; i < 200000; ++i) {
@@ -927,7 +1153,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
     uint32_t flag = 0;
     std::vector<int32_t> funcResult;
     int32_t ret = storageDaemonProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
-    ASSERT_EQ(ret, shareFileCreateFailed);
+    ASSERT_EQ(ret, CreateShareFileFailed);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_002 end";
 }
 
@@ -2567,275 +2793,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ValidateBlockDevic
     EXPECT_EQ(StorageDaemonProvider::ValidateBlockDevicePath(
         "/dev/mapper/nonexist_dir/nonexist_dev", verifiedPath), E_PARAMS_INVALID);
 #endif
-}
-
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ValidateMountPath_001, TestSize.Level1)
-{
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-#ifdef EXTERNAL_STORAGE_MANAGER
-    std::string verifiedPath;
-    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath("", verifiedPath), E_PARAMS_INVALID);
-    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath(
-        std::string(PATH_MAX, 'a'), verifiedPath), E_PARAMS_INVALID);
-    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath("/mnt/data/../secret", verifiedPath),
-        E_PARAMS_INVALID);
-    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath("/tmp/fake", verifiedPath), E_PARAMS_INVALID);
-    EXPECT_EQ(StorageDaemonProvider::ValidateMountPath(
-        "/mnt/data/nonexist_subdir/file", verifiedPath), E_PARAMS_INVALID);
-#endif
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_GetPartitionTableInfo_001
- * @tc.desc: Verify the GetPartitionTableInfo function with empty devPath.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetPartitionTableInfo_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTableInfo_001 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "";
-    std::string execRet;
-
-    auto ret = storageDaemonProviderTest_->GetPartitionTableInfo(devPath, execRet);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetPartitionTableInfo_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_CreatePartitionInfo_001
- * @tc.desc: Verify the CreatePartitionInfo function with empty devPath.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartitionInfo_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_001 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "";
-    int32_t partitionNum = 1;
-    int64_t startSector = 2048;
-    int64_t endSector = 102400;
-    std::string typeCode = "ext4";
-
-    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_CreatePartitionInfo_002
- * @tc.desc: Verify the CreatePartitionInfo function with negative partitionNum.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartitionInfo_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_002 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "/dev/block/disk-8-0";
-    int32_t partitionNum = -1;
-    int64_t startSector = 2048;
-    int64_t endSector = 102400;
-    std::string typeCode = "ext4";
-
-    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_002 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_CreatePartitionInfo_003
- * @tc.desc: Verify the CreatePartitionInfo function with invalid sector range (negative startSector).
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartitionInfo_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_003 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "/dev/block/disk-8-0";
-    int32_t partitionNum = 1;
-    int64_t startSector = -1;
-    int64_t endSector = 102400;
-    std::string typeCode = "ext4";
-
-    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_003 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_CreatePartitionInfo_004
- * @tc.desc: Verify the CreatePartitionInfo function with invalid sector range (negative endSector).
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartitionInfo_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_004 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "/dev/block/disk-8-0";
-    int32_t partitionNum = 1;
-    int64_t startSector = 2048;
-    int64_t endSector = -1;
-    std::string typeCode = "ext4";
-
-    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_004 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_CreatePartitionInfo_005
- * @tc.desc: Verify the CreatePartitionInfo function with invalid sector range (start >= end).
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartitionInfo_005, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_005 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "/dev/block/disk-8-0";
-    int32_t partitionNum = 1;
-    int64_t startSector = 102400;
-    int64_t endSector = 2048;
-    std::string typeCode = "ext4";
-
-    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_005 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_CreatePartitionInfo_006
- * @tc.desc: Verify the CreatePartitionInfo function with empty typeCode.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreatePartitionInfo_006, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_006 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "/dev/block/disk-8-0";
-    int32_t partitionNum = 1;
-    int64_t startSector = 2048;
-    int64_t endSector = 102400;
-    std::string typeCode = "";
-
-    auto ret = storageDaemonProviderTest_->CreatePartition(devPath, partitionNum, startSector, endSector, typeCode);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreatePartitionInfo_006 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_DeletePartitionInfo_001
- * @tc.desc: Verify the DeletePartitionInfo function with empty devPath.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartitionInfo_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_001 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "";
-    std::string diskId = "disk-8-0";
-    int32_t partitionNum = 1;
-
-    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, diskId, partitionNum);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_DeletePartitionInfo_002
- * @tc.desc: Verify the DeletePartitionInfo function with negative partitionNum.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartitionInfo_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_002 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "/dev/block/disk-8-0";
-    std::string diskId = "disk-8-0";
-    int32_t partitionNum = -1;
-
-    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, diskId, partitionNum);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_002 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_DeletePartitionInfo_003
- * @tc.desc: Verify the DeletePartitionInfo function with empty diskId.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeletePartitionInfo_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_003 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "/dev/block/disk-8-0";
-    std::string diskId = "";
-    int32_t partitionNum = 1;
-
-    auto ret = storageDaemonProviderTest_->DeletePartitionInfo(devPath, diskId, partitionNum);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeletePartitionInfo_003 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_FormatPartitionInfo_001
- * @tc.desc: Verify the FormatPartitionInfo function with empty devPath.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartitionInfo_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartitionInfo_001 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "";
-    std::string fsType = "ext4";
-    std::string volumeName = "test_volume";
-
-    std::vector<std::string> cmd{};
-    auto ret = storageDaemonProviderTest_->FormatPartition(devPath, fsType, volumeName, cmd, true);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartitionInfo_001 end";
-}
-
-/**
- * @tc.name: StorageDaemonProviderTest_FormatPartitionInfo_002
- * @tc.desc: Verify the FormatPartitionInfo function with empty fsType.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_FormatPartitionInfo_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartitionInfo_002 start";
-    SetCallingUid(DISK_MANAGER_UID);
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::string devPath = "/dev/block/disk-8-0";
-    std::string fsType = "";
-    std::string volumeName = "test_volume";
-
-    std::vector<std::string> cmd{};
-    auto ret = storageDaemonProviderTest_->FormatPartition(devPath, fsType, volumeName, cmd, true);
-    EXPECT_EQ(ret, E_PARAMS_INVALID);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_FormatPartitionInfo_002 end";
 }
 
 HWTEST_F(StorageDaemonProviderTest, FormatPartition_CmdPathTraversal_001, TestSize.Level1)

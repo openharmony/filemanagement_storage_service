@@ -1601,7 +1601,7 @@ bool ContainsInvalidChars(const std::string &filePath)
 
 bool IsShellMetacharPresent(const std::string& str)
 {
-    static const std::string shellChars = "\"$`\\;|&!(){}<>*?[ ]^~\n";
+    static constexpr std::string_view shellChars = "\"$`\\;|&!(){}<>*?[ ]^~\n";
     return str.find_first_of(shellChars) != std::string::npos;
 }
 

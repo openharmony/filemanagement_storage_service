@@ -463,8 +463,8 @@ int32_t StorageStatusManager::SetExtBundleStats(uint32_t userId, const ExtBundle
     std::lock_guard<std::mutex> lock(extBundleMtx_);
     auto bundleStats = FileCacheAdapter::GetInstance().GetBundleExtStats(stats.businessName_, userId);
     if (bundleStats == nullptr) {
-        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u", stats.businessName_.c_str(),
-             userId);
+        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u",
+            stats.businessName_.c_str(), userId);
         return InsertOrUpdateExtBundleStats(userId, stats, callingBundleName);
     }
     if (callingBundleName != bundleStats->bundleName) {
@@ -481,8 +481,8 @@ int32_t StorageStatusManager::GetExtBundleStats(uint32_t userId, ExtBundleStats 
     // 调用存储适配器获取数据（注意：这里直接传递stats.businessName_和userId）
     auto bundleStats = FileCacheAdapter::GetInstance().GetBundleExtStats(stats.businessName_, userId);
     if (bundleStats == nullptr) {
-        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u", stats.businessName_.c_str(),
-             userId);
+        LOGI("BundleExtStats not found for business: %{public}s, userId: %{public}u",
+            stats.businessName_.c_str(), userId);
         stats.businessSize_ = 0;
         return E_OK;
     }
@@ -610,8 +610,10 @@ int32_t StorageStatusManager::DelBundleExtStats(uint32_t userId, const std::stri
         LOGE("invalid params, userId: %{public}u, bundleName: %{public}s", userId, bundleName.c_str());
         return E_PARAMS_INVALID;
     }
+
     std::lock_guard<std::mutex> lock(extBundleMtx_);
     int32_t ret = FileCacheAdapter::GetInstance().DeleteBundleExtStats(bundleName, userId);
+
     if (ret != E_OK) {
         LOGE("DelBundleExtStats failed, ret: %{public}d, userId: %{public}u, bundleName: %{public}s", ret, userId,
              bundleName.c_str());
@@ -658,7 +660,7 @@ int32_t StorageStatusManager::GetMetaDataSize(int64_t &metaDataSize)
         return E_CALCULATE_OVERFLOW_UP;
     }
     metaDataSize = blkResult + chunkResult;
-    LOGI("StorageStatusManager::GetMetaDataSize: blkSize=%{public}lld, chunkSize=%{public}lld, total=%{public}lld",
+    LOGD("StorageStatusManager::GetMetaDataSize: blkSize=%{public}lld, chunkSize=%{public}lld, total=%{public}lld",
         static_cast<long long>(blkSize), static_cast<long long>(chunkSize), static_cast<long long>(metaDataSize));
     return E_OK;
 }

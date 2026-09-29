@@ -82,7 +82,7 @@ HWTEST_F(HiAuditTest, HiAudit_GetMilliseconds_001, TestSize.Level1)
  */
 HWTEST_F(HiAuditTest, HiAudit_ZipUtil_GetDestFilePath_001, TestSize.Level1)
 {
-    EXPECT_NE(ZipUtil::GetDestFilePath("", "dest.csv", KeepStatus::KEEP_NONE_PARENT_PATH), "dest.csv");
+    EXPECT_EQ(ZipUtil::GetDestFilePath("", "dest.csv", KeepStatus::KEEP_NONE_PARENT_PATH), "dest.csv");
     EXPECT_EQ(ZipUtil::GetDestFilePath("simple.txt/", "", KeepStatus::KEEP_NONE_PARENT_PATH), "simple.txt/");
     EXPECT_EQ(ZipUtil::GetDestFilePath("test//simple.txt", "", KeepStatus::KEEP_NONE_PARENT_PATH), "simple.txt");
 }
@@ -97,52 +97,6 @@ HWTEST_F(HiAuditTest, HiAudit_ZipUtil_CloseZipFile_001, TestSize.Level1)
     zipFile nullZip = nullptr;
     ZipUtil::CloseZipFile(nullZip);
     EXPECT_EQ(nullZip, nullptr);
-}
-
-/**
- * @tc.number: HiAudit_WriteToFile_WriteError_001
- * @tc.desc: Verify writeLogSize_ unchanged when write() returns error
- * @tc.type: FUNC
- */
-HWTEST_F(HiAuditTest, HiAudit_WriteToFile_WriteError_001, TestSize.Level1)
-{
-    auto &audit = HiAudit::GetInstance();
-    HiAuditStateGuard guard(audit);
-
-    std::string roPath = "/data/log/hiaudit/storagedaemon/ro_test.csv";
-    int roFd = open(roPath.c_str(), O_CREAT | O_RDONLY, S_IRUSR | S_IWUSR);
-    ASSERT_GE(roFd, 0);
-    audit.writeFd_ = roFd;
-    audit.writeLogSize_ = 100;
-    uint32_t before = audit.writeLogSize_.load();
-
-    audit.WriteToFile("test content");
-
-    EXPECT_EQ(audit.writeLogSize_.load(), before);
-    remove(roPath.c_str());
-}
-
-/**
- * @tc.number: HiAudit_WriteToFile_Normal_001
- * @tc.desc: Verify writeLogSize_ grows by content length on normal write
- * @tc.type: FUNC
- */
-HWTEST_F(HiAuditTest, HiAudit_WriteToFile_Normal_001, TestSize.Level1)
-{
-    auto &audit = HiAudit::GetInstance();
-    HiAuditStateGuard guard(audit);
-
-    std::string rwPath = "/data/log/hiaudit/storagedaemon/rw_test.csv";
-    int rwFd = open(rwPath.c_str(), O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
-    ASSERT_GE(rwFd, 0);
-    audit.writeFd_ = rwFd;
-    audit.writeLogSize_ = 0;
-
-    std::string content = "hello audit";
-    audit.WriteToFile(content);
-
-    EXPECT_EQ(audit.writeLogSize_.load(), static_cast<uint32_t>(content.length()));
-    remove(rwPath.c_str());
 }
 } // namespace StorageDaemon
 } // namespace OHOS

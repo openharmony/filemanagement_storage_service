@@ -121,13 +121,14 @@ bool VolumeCore::Marshalling(Parcel &parcel) const
     if (!parcel.WriteString(fsType_)) {
         return false;
     }
+
     if (!parcel.WriteString(extraInfo_)) {
         return false;
     }
+
     if (!parcel.WriteUint32(partitionNum_)) {
         return false;
     }
-
     return true;
 }
 

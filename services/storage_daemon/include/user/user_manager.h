@@ -44,6 +44,8 @@ private:
 
     DISALLOW_COPY_AND_MOVE(UserManager);
 
+    static const std::vector<std::string> ALLOWED_USER_DIR_PREFIXES;
+
     const std::vector<DirInfo> subDirVec_;
     std::mutex mutex_;
 };

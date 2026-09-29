@@ -64,6 +64,7 @@ ohos_unittest("storage_daemon_clt_test") {
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
   ]
 }
@@ -124,6 +125,7 @@ ohos_unittest("storage_daemon_client_sub_test") {
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
