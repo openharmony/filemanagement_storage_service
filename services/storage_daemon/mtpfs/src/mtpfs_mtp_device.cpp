@@ -31,7 +31,7 @@
 const int32_t FETCH_NUM = 3000;
 const int32_t DIR_COUNT_ONE = 1;
 const uint32_t DEFAULT_COUNT = 100;
-const uint32_t ROOT_DIR_INDEX = 1;
+const uint32_t ROOT_DIR_INDEX = 1; //MTP device root directory handleId
 const uint32_t PTP_ID_START = 300000000;
 const uint32_t PTP_ID_INDEX = 200000000;
 constexpr uint32_t DELETE_OBJECT_DELAY_US = 50000;
@@ -1498,6 +1498,10 @@ void MtpFsDevice::HandleDiffFdMap(std::map<uint32_t, std::string> &diffFdMap, Mt
 
 void MtpFsDevice::HandleRemoveEvent(uint32_t handleId)
 {
+    if (handleId <= ROOT_DIR_INDEX) {
+        LOGI("HandleRemoveEvent skip invalid handle=%{public}u", handleId);
+        return;
+    }
     LOGI("HandleRemoveEvent HandleID=%{public}u", handleId);
     std::unique_lock<std::mutex> lock(deviceMutex_);
     LIBMTP_file_t *file = LIBMTP_Get_Filemetadata(device_, handleId);
