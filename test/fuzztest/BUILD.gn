@@ -59,6 +59,8 @@ group("storage_manager_provider_fuzztest") {
     "storagemanagerproviderumountdissharefilevector_fuzzer:fuzztest",
     "storagemanagerprovidermountdlpfuse_fuzzer:fuzztest",
     "storagemanagerproviderumountdlpfuse_fuzzer:fuzztest",
+    "storagemanagerprovidermountclouddiskfuse_fuzzer:fuzztest",
+    "storagemanagerproviderumountclouddiskfuse_fuzzer:fuzztest",
   ]
 }
 
@@ -115,6 +117,8 @@ group("storage_daemon_provider_fuzztest") {
     "storagedaemonproviderburn_fuzzer:fuzztest",
     "storagedaemonproviderqueryusbisinuse_fuzzer:fuzztest",
     "storagedaemonproviderexecutecommand_fuzzer:fuzztest",
+    "storagedaemonprovidermountclouddiskfuse_fuzzer:fuzztest",
+    "storagedaemonproviderumountclouddiskfuse_fuzzer:fuzztest",
   ]
 }
 
