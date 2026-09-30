@@ -31,7 +31,7 @@
 const int32_t FETCH_NUM = 3000;
 const int32_t DIR_COUNT_ONE = 1;
 const uint32_t DEFAULT_COUNT = 100;
-const uint32_t ROOT_DIR_INDEX = 1; //MTP device root directory handleId
+const uint32_t ROOT_DIR_INDEX = 1; // MTP device root directory handleId
 const uint32_t PTP_ID_START = 300000000;
 const uint32_t PTP_ID_INDEX = 200000000;
 constexpr uint32_t DELETE_OBJECT_DELAY_US = 50000;
@@ -174,7 +174,7 @@ void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param
             break;
         case LIBMTP_EVENT_OBJECT_INFO_CHANGED:
             LOGI("Received event LIBMTP_EVENT_OBJECT_INFO_CHANGED, param=%{public}u", param);
-            if (param > ROOT_DIR_INDEX && !isTransferring_.load()) {
+            if (!isTransferring_.load()) {
                 MtpFileSystem::GetInstance().HandleObjectInfoChanged(param);
             }
             break;
