@@ -36,6 +36,8 @@
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
+#define FDSAN_TAG 1
+const uint64_t NEW_TAG = static_cast<uint64_t>(0xD004301) << 32 | FDSAN_TAG;
 const UserAuth NULL_KEY_AUTH = {};
 constexpr const char *BACKUP_NAME = "_bak";
 constexpr const char *DEFAULT_NEED_RESTORE_VERSION = "1";
@@ -2694,7 +2696,8 @@ bool KeyManager::IsUeceSupport()
         LOGE("[L3:KeyManager] IsUeceSupport: failed to open UECE, errno=%{public}d", errno);
         return false;
     }
-    close(fd);
+    fdsan_exchange_owner_tag(fd, 0, NEW_TAG);
+    fdsan_close_with_tag(fd, NEW_TAG);
     LOGD("[L3:KeyManager] IsUeceSupport: <<< EXIT SUCCESS <<< [uece supported=true]");
     return true;
 }
@@ -2743,7 +2746,8 @@ int KeyManager::IsUeceSupportWithErrno()
         LOGE("[L3:KeyManager] IsUeceSupportWithErrno: failed to open UECE, errno=%{public}d", tmpErrno);
         return tmpErrno;
     }
-    close(fd);
+    fdsan_exchange_owner_tag(fd, 0, NEW_TAG);
+    fdsan_close_with_tag(fd, NEW_TAG);
     LOGI("[L3:KeyManager] IsUeceSupportWithErrno: <<< EXIT SUCCESS <<< [retval=0, uece supported=true]");
     return E_OK;
 }

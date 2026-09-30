@@ -163,6 +163,28 @@ char *realpath(const char *path, char *resolved_path)
     return IFuncMock::iFuncMock_->realpath(path, resolved_path);
 }
 
+extern "C" {
+void fdsan_exchange_owner_tag(int fd, uint64_t expected_tag, uint64_t new_tag)
+{
+    (void)fd;
+    (void)expected_tag;
+    (void)new_tag;
+}
+
+int fdsan_close_with_tag(int fd, uint64_t tag)
+{
+    (void)tag;
+    if (IFuncMock::iFuncMock_ == nullptr || fd != FbexTest::fd_) {
+        closeFuncT originalClose = reinterpret_cast<closeFuncT>(dlsym(RTLD_NEXT, "close"));
+        if (originalClose == nullptr) {
+            return -1;
+        }
+        return originalClose(fd);
+    }
+    return IFuncMock::iFuncMock_->close(fd);
+}
+}
+
 namespace OHOS::StorageDaemon::Test {
 using namespace testing::ext;
 using namespace testing;
